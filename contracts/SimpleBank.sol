@@ -65,21 +65,22 @@ contract SimpleBank {
     function deposit() public payable returns (uint) {
         balances[msg.sender] += msg.value;
         emit LogDepositMade(msg.sender, msg.value);
-        return balances[msg.sender];
+        return balance();
         /* Add the amount to the user's balance, call the event associated with a deposit,
           then return the balance of the user */
     }
 
     /// @notice Withdraw ether from bank
     /// @dev This does not return any excess ether sent to it
-    /// @param withdrawAmount amount you want to withdraw
+    /// @param _withdrawAmount amount you want to withdraw
     /// @return The balance remaining for the user
     // Emit the appropriate event
-    function withdraw(uint withdrawAmount) public returns (uint) {
-        if (balances[msg.sender] < withdrawAmount) return 0;
-        balances[msg.sender] -= withdrawAmount;
-        emit LogWithdrawal(msg.sender, withdrawAmount, balances[msg.sender]);
-        return balances[msg.sender];
+    function withdraw(uint _withdrawAmount) public returns (uint) {
+        if (balances[msg.sender] < _withdrawAmount) return 0;
+        balances[msg.sender] -= _withdrawAmount;
+        msg.sender.transfer(_withdrawAmount);
+        emit LogWithdrawal(msg.sender, _withdrawAmount, balances[msg.sender]);
+        return balance();
         /* If the sender's balance is at least the amount they want to withdraw,
            Subtract the amount from the sender's balance, and try to send that amount of ether
            to the user attempting to withdraw.
@@ -91,7 +92,7 @@ contract SimpleBank {
     // Typically, called when invalid data is sent
     // Added so ether sent to this contract is reverted if the contract fails
     // otherwise, the sender's money is transferred to contract
-    function() {
+    function() public payable{
         revert();
     }
 }
